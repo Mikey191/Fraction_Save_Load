@@ -33,9 +33,12 @@ public:
 	Fraction& RightFraction();
 	Fraction& IntegerPart();
 	Fraction& Exam();
-	
-	void SaveData();
-	void LoadData();
+
+	friend ofstream& operator<<(ofstream& os, Fraction& f);//для загрузки в файл
+	friend ifstream& operator>>(ifstream& is, Fraction& f);//для выгрузки из файла
+
+	friend void SaveData(Fraction& f);//загрузка в файл
+	friend void LoadData(Fraction& f);//выгрузка из файлa
 };
 
 int main()
@@ -45,6 +48,13 @@ int main()
 	Fraction f3;
 	f3 = f1 + f2;
 	f3.print();
+	SaveData(f1);
+	SaveData(f2);
+	SaveData(f3);
+	
+	Fraction f4;
+	LoadData(f4);
+	f4.print();
 
 	return 0;
 }
@@ -155,6 +165,71 @@ Fraction operator/(int value, Fraction& f)
 	temp.z = f.z * value;
 
 	return temp;
+}
+
+ofstream& operator<<(ofstream& os, Fraction& f)
+{
+	f.Exam();
+	if (f.intPart > 0) os << f.intPart << "(" << f.c << "/" << f.z << ")" << endl;
+	else os << "(" << f.c << "/" << f.z << ")" << endl;
+
+	return os;
+}
+
+ifstream& operator>>(ifstream& is, Fraction& f)
+{
+	//isdigit()//находит цифры
+	//ispunct(s2[0]) != 0 //находит скобки
+	string temp;
+	string buf[3];
+	
+		getline(is, temp);
+		//анализируем получившуюся строку
+		if (ispunct(temp[0]) != 0)//если первый символ скобка
+		{
+			int i = 1;
+			while (isdigit(temp[i]) != 0)
+				buf[0] += temp[i++];
+			int j = i + 1;
+			while (isdigit(temp[j]) != 0)
+				buf[1] += temp[j++];
+			f.c = stoi(buf[0]);
+			f.z = stoi(buf[1]);
+		}
+		else if (isdigit(temp[0]) != 0)
+		{
+			int i = 0;
+			while (isdigit(temp[i]) != 0)
+				buf[0] = temp[i++];
+			int j = i + 1;
+			while (isdigit(temp[j]) != 0)
+				buf[1] += temp[j++];
+			int k = j + 1;
+			while (isdigit(temp[k]) != 0)
+				buf[2] += temp[k++];
+			f.intPart = stoi(buf[0]);
+			f.c = stoi(buf[1]);
+			f.z = stoi(buf[2]);
+		}
+	
+
+	return is;
+}
+
+void SaveData(Fraction& f)
+{
+	string filename = "1.txt";
+	ofstream os(filename, ios::app);
+	os << f;
+	os.close();
+}
+
+void LoadData(Fraction& f)
+{
+	string filename = "1.txt";
+	ifstream is(filename);
+	is >> f;
+	is.close();
 }
 
 Fraction& Fraction::RightFraction()
